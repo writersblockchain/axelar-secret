@@ -33,7 +33,6 @@ ibc3 = ["stargate"]
 cosmwasm-std = { git = "https://github.com/scrtlabs/cosmwasm", default-features = false, rev = "8ee395ba033c392d7170c971df97f085edaed2d9", package = "secret-cosmwasm-std", features = [
     "stargate",
     "ibc3",
-    "random",
 ] }
 cosmwasm-storage = { git = "https://github.com/scrtlabs/cosmwasm", rev = "8ee395ba033c392d7170c971df97f085edaed2d9", package = "secret-cosmwasm-storage" }
 schemars = "0.8.1"
@@ -41,14 +40,16 @@ serde = { version = "1.0.114", default-features = false, features = ["derive"] }
 secret-toolkit = { version = "0.7.0" }
 hex = "0.4.3"
 serde-json-wasm = "1.0.0"
+cosmos-sdk-proto = { version = "0.19.0", default-features = false }
 
 
 thiserror = { version = "1.0.31" }
 prost = { version = "0.12.1", default-features = false, features = [
     "prost-derive",
 ] }
-osmosis-std-derive = "0.16.2"
-osmosis-std = "0.19.1"
+# osmosis-std-derive = "0.16.2"
+# osmosis-std = "0.19.2"
+cosmwasm-schema = "1.2.5"
 ethabi = { version = "18.0.0", default-features = false, features = [] }
 
 [patch.crates-io]

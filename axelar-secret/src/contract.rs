@@ -1,19 +1,12 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use ethabi::{decode, encode, ParamType, Token};
+use prost::Message;
 use serde_json_wasm::to_string;
-
-// use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::*;
 use crate::state::*;
-
-/*
-// version info for migration info
-const CONTRACT_NAME: &str = "crates.io:send-receive";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-*/
 
 pub fn instantiate(
     _deps: DepsMut,
@@ -87,7 +80,14 @@ mod exec {
         ]);
 
         // {info.funds} used to pay gas. Must only contain 1 token type.
-        let coin: cosmwasm_std::Coin = cw_utils::one_coin(&info).unwrap();
+        // let coin: cosmwasm_std::Coin = cw_utils::one_coin(&info).unwrap();
+
+        let coin = &info.funds[0];
+
+        let my_coin = crate::ibc::Coin {
+            denom: coin.denom.clone(),
+            amount: coin.amount.clone().to_string(),
+        };
 
         let gmp_message: GmpMessage = GmpMessage {
             destination_chain,
@@ -100,16 +100,21 @@ mod exec {
         let ibc_message = crate::ibc::MsgTransfer {
             source_port: "transfer".to_string(),
             source_channel: "channel-3".to_string(), // Testnet Osmosis to axelarnet: https://docs.axelar.dev/resources/testnet#ibc-channels
-            token: Some(coin.into()),
+            token: Some(my_coin.into()),
             sender: env.contract.address.to_string(),
             receiver: "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
                 .to_string(),
             timeout_height: None,
-            timeout_timestamp: Some(env.block.time.plus_seconds(604_800u64).nanos()),
+            timeout_timestamp: env.block.time.plus_seconds(604_800u64).nanos(),
             memo: to_string(&gmp_message).unwrap(),
         };
 
-        Ok(Response::new().add_message(ibc_message))
+        let cosmos_msg = cosmwasm_std::CosmosMsg::Stargate {
+            type_url: "/ibc.applications.transfer.v1.MsgTransfer".to_string(),
+            value: Binary(ibc_message.encode_to_vec()),
+        };
+
+        Ok(Response::new().add_message(cosmos_msg))
     }
 
     // Sends a message via Axelar GMP to the other cosmos chains
@@ -143,21 +148,32 @@ mod exec {
         };
 
         // info.funds used to pay gas. Must only contain 1 token type.
-        let coin: cosmwasm_std::Coin = cw_utils::one_coin(&info).unwrap();
+        // let coin: cosmwasm_std::Coin = cw_utils::one_coin(&info).unwrap();
+        let coin = &info.funds[0];
+
+        let my_coin = crate::ibc::Coin {
+            denom: coin.denom.clone(),
+            amount: coin.amount.clone().to_string(),
+        };
 
         let ibc_message = crate::ibc::MsgTransfer {
             source_port: "transfer".to_string(),
             source_channel: "channel-3".to_string(), // Testnet Osmosis to axelarnet: https://docs.axelar.dev/resources/testnet#ibc-channels
-            token: Some(coin.into()),
+            token: Some(my_coin.into()),
             sender: env.contract.address.to_string(),
             receiver: "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
                 .to_string(),
             timeout_height: None,
-            timeout_timestamp: Some(env.block.time.plus_seconds(604_800u64).nanos()),
+            timeout_timestamp: env.block.time.plus_seconds(604_800u64).nanos(),
             memo: to_string(&gmp_message).unwrap(),
         };
 
-        Ok(Response::new().add_message(ibc_message))
+        let cosmos_msg = cosmwasm_std::CosmosMsg::Stargate {
+            type_url: "/ibc.applications.transfer.v1.MsgTransfer".to_string(),
+            value: Binary(ibc_message.encode_to_vec()),
+        };
+
+        Ok(Response::new().add_message(cosmos_msg))
     }
 
     pub fn receive_message_evm(
@@ -177,7 +193,7 @@ mod exec {
         // store message
         STORED_MESSAGE.save(
             deps.storage,
-            &Message {
+            &MyMessage {
                 sender: decoded[0].to_string(),
                 message: decoded[1].to_string(),
             },
@@ -192,7 +208,7 @@ mod exec {
         message: String,
     ) -> Result<Response, ContractError> {
         // store message
-        STORED_MESSAGE.save(deps.storage, &Message { sender, message })?;
+        STORED_MESSAGE.save(deps.storage, &MyMessage { sender, message })?;
 
         Ok(Response::new())
     }

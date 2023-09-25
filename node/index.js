@@ -5,9 +5,9 @@ dotenv.config();
 
 const wallet = new Wallet(process.env.MNEMONIC);
 
-// const contract_wasm = fs.readFileSync(
-//   "../contract/target/wasm32-unknown-unknown/release/send_receive.wasm"
-// );
+const contract_wasm = fs.readFileSync(
+  "../axelar-secret/target/wasm32-unknown-unknown/release/secret_axelar.wasm"
+);
 
 // let codeId = 934;
 // let contractCodeHash =
@@ -34,20 +34,23 @@ let upload_contract = async () => {
     }
   );
 
-  const codeId = Number(
-    tx.arrayLog.find((log) => log.type === "message" && log.key === "code_id")
-      .value
-  );
-  // console.log(tx);
-  console.log("codeId: ", codeId);
-
-  const contractCodeHash = (
-    await secretjs.query.compute.codeHashByCodeId({ code_id: codeId })
-  ).code_hash;
-  console.log(`Contract hash: ${contractCodeHash}`);
+  console.log(tx);
 };
 
-// upload_contract();
+// const codeId = Number(
+//   tx.arrayLog.find((log) => log.type === "message" && log.key === "code_id")
+//     .value
+// );
+// // console.log(tx);
+// console.log("codeId: ", codeId);
+
+//   const contractCodeHash = (
+//     await secretjs.query.compute.codeHashByCodeId({ code_id: codeId })
+//   ).code_hash;
+//   console.log(`Contract hash: ${contractCodeHash}`);
+// };
+
+upload_contract();
 
 let instantiate_contract = async () => {
   // Create an instance of the Counter contract, providing a starting count
@@ -74,4 +77,3 @@ let instantiate_contract = async () => {
 };
 
 // instantiate_contract();
-
