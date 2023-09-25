@@ -5,14 +5,12 @@ dotenv.config();
 
 const wallet = new Wallet(process.env.MNEMONIC);
 
-const contract_wasm = fs.readFileSync(
-  "../axelar-secret/target/wasm32-unknown-unknown/release/secret_axelar.wasm"
-);
+const contract_wasm = fs.readFileSync("../axelar-secret/contract.wasm.gz");
 
-// let codeId = 934;
-// let contractCodeHash =
-//   "a448595e3a46197776ff966c980d0de770c052c7f1ced1577027906835126bd5";
-// let contractAddress = "secret1xjvnf8fru5xe2x73g6mdfef9zcj00umhvvzqsp";
+let codeId = 1356;
+let contractCodeHash =
+  "c125bcf327cb6605a1503b254678f62f618f33d56c0dfcffee3bda642ab22b34";
+// let contractAddress = "secret1k2rz6eugrxnkvpnkvhlkaldcxe0z838vzfhyvq";
 
 const secretjs = new SecretNetworkClient({
   chainId: "pulsar-3",
@@ -34,23 +32,20 @@ let upload_contract = async () => {
     }
   );
 
-  console.log(tx);
+  const codeId = Number(
+    tx.arrayLog.find((log) => log.type === "message" && log.key === "code_id")
+      .value
+  );
+  // console.log(tx);
+  console.log("codeId: ", codeId);
+
+  const contractCodeHash = (
+    await secretjs.query.compute.codeHashByCodeId({ code_id: codeId })
+  ).code_hash;
+  console.log(`Contract hash: ${contractCodeHash}`);
 };
 
-// const codeId = Number(
-//   tx.arrayLog.find((log) => log.type === "message" && log.key === "code_id")
-//     .value
-// );
-// // console.log(tx);
-// console.log("codeId: ", codeId);
-
-//   const contractCodeHash = (
-//     await secretjs.query.compute.codeHashByCodeId({ code_id: codeId })
-//   ).code_hash;
-//   console.log(`Contract hash: ${contractCodeHash}`);
-// };
-
-upload_contract();
+// upload_contract();
 
 let instantiate_contract = async () => {
   // Create an instance of the Counter contract, providing a starting count
@@ -76,4 +71,4 @@ let instantiate_contract = async () => {
   console.log(contractAddress);
 };
 
-// instantiate_contract();
+instantiate_contract();

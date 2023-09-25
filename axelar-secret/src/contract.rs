@@ -1,12 +1,14 @@
 use crate::error::ContractError;
 use crate::msg::*;
 use crate::state::*;
-#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
+// #[cfg(not(feature = "library"))]
 use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use ethabi::{decode, encode, ParamType, Token};
 use prost::Message;
 use serde_json_wasm::to_string;
 
+#[entry_point]
 pub fn instantiate(
     _deps: DepsMut,
     _env: Env,
