@@ -53,7 +53,7 @@ pub struct GmpMessage {
     pub destination_chain: String,
     pub destination_address: String,
     pub payload: Vec<u8>,
-    // #[serde(rename = "type")]
+    #[serde(rename = "type")]
     pub type_: i64,
     pub fee: Option<Fee>,
 }

@@ -35,8 +35,6 @@ cosmwasm-std = { git = "https://github.com/scrtlabs/cosmwasm", default-features 
     "ibc3",
 ] }
 cosmwasm-storage = { git = "https://github.com/scrtlabs/cosmwasm", rev = "8ee395ba033c392d7170c971df97f085edaed2d9", package = "secret-cosmwasm-storage" }
-# schemars = "0.8.1"
-# serde = { version = "1.0.114", default-features = false, features = ["derive"] }
 secret-toolkit = { version = "0.7.0" }
 hex = "0.4.3"
 serde-json-wasm = "1.0.0"
@@ -46,9 +44,6 @@ schemars = { version = "0.8.11" }
 serde = { version = "1.0" }
 thiserror = { version = "1.0" }
 cosmwasm-schema = "1.0.0"
-
-
-# thiserror = { version = "1.0.31" }
 prost = { version = "0.12.1", default-features = false, features = [
     "prost-derive",
 ] }
