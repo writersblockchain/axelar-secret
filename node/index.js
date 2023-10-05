@@ -7,14 +7,17 @@ const wallet = new Wallet(process.env.MNEMONIC);
 
 const contract_wasm = fs.readFileSync("../axelar-secret/contract.wasm.gz");
 
-let codeId = 1356;
-let contractCodeHash =
-  "c125bcf327cb6605a1503b254678f62f618f33d56c0dfcffee3bda642ab22b34";
-let contractAddress = "secret1k2rz6eugrxnkvpnkvhlkaldcxe0z838vzfhyvq";
+// let codeId = 1524;
+// let contractCodeHash =
+//   "c125bcf327cb6605a1503b254678f62f618f33d56c0dfcffee3bda642ab22b34";
+// let contractAddress = "secret1snxynfg7x8new3a7p30tn5e44s3q34eue3ahnv";
+// let contractCodeHash =
+//   "c125bcf327cb6605a1503b254678f62f618f33d56c0dfcffee3bda642ab22b34";
+// let contractAddress = "secret1k2rz6eugrxnkvpnkvhlkaldcxe0z838vzfhyvq";
 
 const secretjs = new SecretNetworkClient({
-  chainId: "pulsar-3",
-  url: "https://api.pulsar3.scrttestnet.com",
+  chainId: "secret-4",
+  url: "https://lcd.mainnet.secretsaturn.net",
   wallet: wallet,
   walletAddress: wallet.address,
 });
@@ -73,6 +76,29 @@ let instantiate_contract = async () => {
 
 // instantiate_contract();
 
+let send_message_evm = async () => {
+  const tx = await secretjs.tx.compute.executeContract(
+    {
+      sender: wallet.address,
+      contract_address: contractAddress,
+      msg: {
+        send_message_evm: {
+          destination_chain: "Polygon",
+          destination_address: "0x2f5414aFCac277B6FCe859Aa1454937F38D86C2c",
+          message:
+            "One small secret step for human, one large secret step for humankind",
+        },
+      },
+      code_hash: contractCodeHash,
+    },
+    { gasLimit: 100_000 }
+  );
+
+  console.log(tx);
+};
+
+// send_message_evm();
+
 let queryContractInfo = async () => {
   let query = await secretjs.query.compute.contractInfo({
     contract_address: contractAddress,
@@ -95,4 +121,6 @@ let get_stored_message = async () => {
   console.log(query);
 };
 
-// get_stored_message();
+get_stored_message();
+
+// secretcli tx wasm execute secret1snxynfg7x8new3a7p30tn5e44s3q34eue3ahnv '{"send_message_evm": {"destination_chain": "Polygon", "destination_address":"0x2f5414aFCac277B6FCe859Aa1454937F38D86C2c","message":"seanrad"}}' --amount 1uscrt --from pulsar3-test

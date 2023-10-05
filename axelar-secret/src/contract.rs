@@ -99,8 +99,8 @@ mod exec {
         };
 
         let ibc_message = crate::ibc::MsgTransfer {
-            source_port: "transfer".to_string(),
-            source_channel: "channel-3".to_string(), // Testnet Osmosis to axelarnet: https://docs.axelar.dev/resources/testnet#ibc-channels
+            source_port: "wasm.secret1vfht4c30h4st7e254ww86p6whwyy0uux2ns5ck".to_string(),
+            source_channel: "channel-0".to_string(), // Testnet Osmosis to axelarnet: https://docs.axelar.dev/resources/testnet#ibc-channels
             token: Some(my_coin.into()),
             sender: env.contract.address.to_string(),
             receiver: "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
