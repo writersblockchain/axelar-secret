@@ -7,10 +7,20 @@ const wallet = new Wallet(process.env.MNEMONIC);
 
 const contract_wasm = fs.readFileSync("../axelar-secret/contract.wasm.gz");
 
-let codeId = 1283;
-let contractCodeHash =
-  "c125bcf327cb6605a1503b254678f62f618f33d56c0dfcffee3bda642ab22b34";
+let codeId = 1544;
+// let contractCodeHash =
+//   "c125bcf327cb6605a1503b254678f62f618f33d56c0dfcffee3bda642ab22b34";
+// let contractAddress = "secret1yeszls335cl974z5rmssvr0mwqvvex3kwwrykx";
 let contractAddress = "secret1emjduz0a25s4tdef92tn03jxduvgwm58x3ysl4";
+let contractCodeHash =
+  "0xc125bcf327cb6605a1503b254678f62f618f33d56c0dfcffee3bda642ab22b34%";
+
+// const secretjs = new SecretNetworkClient({
+//   chainId: "pulsar-3",
+//   url: "https://api.pulsar3.scrttestnet.com",
+//   wallet: wallet,
+//   walletAddress: wallet.address,
+// });
 
 const secretjs = new SecretNetworkClient({
   chainId: "secret-4",
@@ -71,7 +81,7 @@ let instantiate_contract = async () => {
   console.log(contractAddress);
 };
 
-instantiate_contract();
+// instantiate_contract();
 
 let queryContractInfo = async () => {
   let query = await secretjs.query.compute.contractInfo({
@@ -95,4 +105,4 @@ let get_stored_message = async () => {
   console.log(query);
 };
 
-// get_stored_message();
+get_stored_message();
