@@ -63,7 +63,23 @@ pub fn execute(
 }
 
 mod exec {
+    use cosmwasm_std::{CosmosMsg, StdError, Uint128};
+    use serde::{Deserialize, Serialize};
+
     use super::*;
+
+    /// This is the message we accept via Receive
+    #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+    #[serde(rename_all = "snake_case")]
+    pub struct TransferMsg {
+        /// The local channel to send the packets on
+        pub channel: String,
+        /// The remote address to send to.
+        pub remote_address: String,
+        /// How long the packet lives in seconds
+        pub timeout: u64,
+        pub memo: String,
+    }
 
     // Sends a message via Axelar GMP to the EVM {destination_chain} and {destination_address}
     pub fn send_message_evm(
@@ -98,24 +114,54 @@ mod exec {
             fee: None,
         };
 
-        let ibc_message = crate::ibc::MsgTransfer {
-            source_port: "wasm.secret1vfht4c30h4st7e254ww86p6whwyy0uux2ns5ck".to_string(),
-            source_channel: "channel-0".to_string(), // Testnet Osmosis to axelarnet: https://docs.axelar.dev/resources/testnet#ibc-channels
-            token: Some(my_coin.into()),
-            sender: env.contract.address.to_string(),
-            receiver: "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
+        let gmp_str = to_string(&gmp_message).map_err(|e| {
+            StdError::generic_err(format!("error serializing gmp message: {:?}", e))
+        })?;
+        let send_msg = to_binary(&TransferMsg {
+            channel: "channel-3".to_string(),
+            remote_address: "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
                 .to_string(),
-            timeout_height: None,
-            timeout_timestamp: env.block.time.plus_seconds(604_800u64).nanos(),
-            memo: to_string(&gmp_message).unwrap(),
-        };
+            timeout: 10 * 60,
+            memo: gmp_str,
+        })?;
+        let msg = secret_toolkit::snip20::send_msg_with_code_hash(
+            "secret1yxjmepvyl2c25vnt53cr2dpn8amknwausxee83".to_string(),
+            Some("2976a2577999168b89021ecb2e09c121737696f71c4342f9a922ce8654e98662".to_string()),
+            Uint128::new(0),
+            Some(send_msg), // msg goes here
+            None,
+            None,
+            1,
+            "638a3e1d50175fbcb8373cf801565283e3eb23d88a9b7b7f99fcc5eb1e6b561e".to_string(),
+            "secret1vcau4rkn7mvfwl8hf0dqa9p0jr59983e3qqe3z".to_string(), /* snip20 contract originates from axelar*/
+        );
 
-        let cosmos_msg = cosmwasm_std::CosmosMsg::Stargate {
-            type_url: "/ibc.applications.transfer.v1.MsgTransfer".to_string(),
-            value: Binary(ibc_message.encode_to_vec()),
-        };
+        // let ibc_message = crate::ibc::MsgTransfer {
+        //     source_port: "wasm.secret1vfht4c30h4st7e254ww86p6whwyy0uux2ns5ck".to_string(),
+        //     source_channel: "channel-3".to_string(), // Testnet Osmosis to axelarnet: https://docs.axelar.dev/resources/testnet#ibc-channels
+        //     token: Some(my_coin.into()),
+        //     sender: env.contract.address.to_string(),
+        //     receiver: "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
+        //         .to_string(),
+        //     timeout_height: None,
+        //     timeout_timestamp: env.block.time.plus_seconds(604_800u64).nanos(),
+        //     memo: to_string(&gmp_message).unwrap(),
+        // };
 
-        Ok(Response::new().add_message(cosmos_msg))
+        // let cosmos_msg = cosmwasm_std::CosmosMsg::Stargate {
+        //     type_url: "/ibc.applications.transfer.v1.MsgTransfer".to_string(),
+        //     value: Binary(ibc_message.encode_to_vec()),
+        // };
+
+        // Ok(Response::new().add_message(cosmos_msg))
+        Ok(
+            Response::new().add_message(CosmosMsg::Wasm(cosmwasm_std::WasmMsg::Execute {
+                contract_addr: (),
+                code_hash: (),
+                msg: (),
+                funds: (),
+            })),
+        )
     }
 
     // Sends a message via Axelar GMP to the other cosmos chains
